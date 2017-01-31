@@ -14,6 +14,7 @@ svg {
   stroke: #fff;
 }
 
+
 </style>
 <body>
 <script src="//d3js.org/d3.v3.min.js"></script>
@@ -35,16 +36,19 @@ var pie = d3.layout.pie()
 
 d3.csv("data.csv", function(error, data) {
   if (error) throw error;
-  
+  data.sort(function(a, b){
+    return b["Avg"]-a["Avg"];
+});
   color.domain(d3.keys(data[0]).filter(function(key) { return key !== "Alias" && key !== "Avg"; }));
    
 
   data.forEach(function(d) {
     d.ages = color.domain().map(function(name) {
-      return {name: name, person: +d[name]};
+    	return {name: name, person: +d[name]};
+      
     });
   });
-
+	
   var legend = d3.select("body").append("svg")
       .attr("class", "legend")
       .attr("width", radius * 2)
@@ -78,12 +82,21 @@ d3.csv("data.csv", function(error, data) {
       .data(function(d) { return pie(d.ages); })
     .enter().append("path")
       .attr("class", "arc")
+      .attr("id", function(d,i) { return "Arc_"+i; })
       .attr("d", arc)
-      .style("fill", function(d) { return color(d.data.name); })
-      .append("text")
-      .attr("transform", function(d) { return "translate(" + arc.centroid(d) + ")"; })
-      .attr("dy", ".35em")
-      .text(function(d) { return "hh"; });
+      .style("fill", function(d) { return color(d.data.name); });
+        
+        
+   svg.selectAll(".attribvalues")
+	.data(data)
+   .enter().append("text")
+	.attr("class", "arcText")
+	.attr("x", 5)   //Move the text from the start angle of the arc
+	.attr("dy", 18)
+   .append("textPath")
+	.attr("xlink:href",function(d,i){return "#Arc_"+i;})
+	.text(function(d,i){return d3.keys(d[i])+i; });
+      
 
 
   svg.append("text")
@@ -98,3 +111,4 @@ d3.csv("data.csv", function(error, data) {
 });
 
 </script>
+
